@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permission_Management</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="user_management.css">
+    <script src="SecurityManager.js"></script>
+    <script>
+
+        var id_exist = -1;
+        var edit_flag = false;
+
+
+        function successFunc()
+        {
+            alert("Permission Saved!");
+        }
+
+        function errorFunc(){
+            alert("Can't save permission!")
+        }
+
+        function handleSubmit(event) {
+
+            event.preventDefault();
+            let check1 = false;
+
+            if(validate())
+            {
+                
+                event.preventDefault();
+                    var user_perm = gid('permName').value;
+                    var perm_desc = gid('description').value;
+
+                if(id_exist == -1){
+
+                    var obj =  {perm_name: user_perm, desc: perm_desc};
+                }
+
+                if(id_exist > 0){
+
+                    var obj =  {ID: id_exist,perm_name: user_perm, desc: perm_desc};
+                    check1 = uniquePermission();
+                    if(check1){
+                        document.getElementById("perm").innerHTML = "Permission Name already exists!!";
+                        return false;
+                    }
+
+                }
+                if(!check1){
+                    SecurityManager.SavePermission(obj, successFunc, errorFunc);
+                    location.reload();
+                }
+             }
+
+            else{
+                alert("Can't save Permission!");
+            }
+
+            edit_flag = false;
+             
+        }
+
+        function uniquePermission(){
+
+            let perm_data = SecurityManager.GetAllPermissions();
+            var user_perms = document.getElementById("permName").value;
+
+
+            for(let i = 0; i < perm_data.length; i++){
+
+                if(perm_data[i].ID != id_exist){
+                if(perm_data[i].perm_name == user_perms)
+                {
+                    return true;
+                }
+            }
+
+            } //end of for loop
+            return false;
+
+            }
+
+        function validate() {
+
+            if ( document.user.permName.value == "" )
+	        {
+            document.getElementById("perm").innerHTML = "Permission Name is empty!!";		
+			return false;
+	        }
+	
+	        if(document.user.description.value == "")	
+	        {
+            document.getElementById("desc").innerHTML = "Description is empty!!";
+			return false;
+	        }	
+
+            if(!edit_flag){
+
+                if (uniquePermission())
+                {		
+                document.getElementById("perm").innerHTML = "Permission Name already exists!!";
+                return false;
+                }
+               }
+
+	        return true;
+
+        }
+
+        function tableView()
+       {
+
+        var perms_data = SecurityManager.GetAllPermissions();
+        const TABLE = document.createElement('table');
+        TABLE.setAttribute('class','viewTable');
+        TABLE.innerHTML="<tr><th>ID</th><th>Name</th><th>Description</th><th>Edit</th><th>Delete</th></tr>";
+    
+        for(var i=0; i < perms_data.length; i++)
+        { 
+            var trow = document.createElement('tr');
+
+            trow.innerHTML="<td>" + perms_data[i].ID +"</td><td>"+perms_data[i].perm_name +"</td><td>"+perms_data[i].desc +"</td><td><a href='javascript:loadForm("+perms_data[i].ID+")'>Edit</a></td><td><a href='javascript:DeleteUser("+perms_data[i].ID+")'>Delete</a></td>";
+           
+            TABLE.appendChild(trow);
+        }
+
+        document.getElementById("tableView").appendChild(TABLE);
+    
+        }
+
+        function DeleteUser(permId){
+
+            console.log("delete");
+             var result = confirm("Do you want to Delete Permission?");
+                if(result){
+
+                    SecurityManager.DeletePermission(permId, successFunc, errorFunc);
+                    location.reload();
+                }
+                else{
+                    return;
+                }
+        }
+
+        function loadForm(permId)
+        {
+            var editPerm = SecurityManager.GetPermissionById(permId);
+
+            edit_flag = true;
+            id_exist = permId;
+            gid("permName").value = editPerm.perm_name;
+            gid("description").value = editPerm.desc;
+
+        }
+
+    </script>
+
+    <style>
+
+         div.container {
+
+            display: flex; 
+            margin-top: 100px;
+            justify-content: center;
+           
+        }
+
+        div.user_form{
+
+            float: left;
+            margin-right: 20px;
+        }
+
+        div.table{
+
+        margin-top: 25px;
+        margin-left: 30px;
+        float: right;
+        align-items: center;
+
+        }
+    </style>
+
+
+</head>
+<body onload="tableView()">
+    
+
+        <div class="navBar">
+            <nav class="topnav">
+                <a href="admin.html"><b>Home</b></a>
+                <a href="user_management.html">User Management </a>
+                <a href="role_management.html">Role Management</a>
+                <a class="active" href="permission_management.html">Pemission Management</a>
+                <a href="rolePermission_management.html">Role-Pemission Management</a>
+                <a href="userRole_management.html">User-Role Management</a>
+                <a href="Login.html">LogOut</a>
+                </nav>
+        </div>
+        <div class="container">
+        <div class="user_form">
+
+            <form class="userForm" id="user_form" name="user" >
+
+            <div class="main">
+                <h2 class="form_head">Permission Management</h2>
+            </div>
+
+                    <div class="errors" id="perm" style="color: red;"></div>
+                    <label for="permission">Permission Name:</label><br>
+                    <input type="text" name="perm_name" id="permName"><br><br>
+                   
+                    <div class="errors" id="desc" style="color: red;"></div>
+                    <label for="desc">Description:</label><br>
+                    <input type="text" name="desc" id="description"><br><br>
+                    
+
+                    <div class="submit">
+
+                        <input type="reset">
+                        <input type="submit" value="Save" >
+
+                    </div>
+                </form>
+
+        </div>
+
+        <div class="table" id="tableView">
+
+        </div>
+
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', handleSubmit);
+    </script>
+
+    <script>
+       var perms = SecurityManager.GetAllPermissions();
+       console.log(perms);
+    </script>
+    
+</body>
+</html>

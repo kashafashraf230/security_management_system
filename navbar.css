@@ -1,0 +1,39 @@
+* {box-sizing: border-box;}
+
+body {
+
+  margin: 0;
+  font-family: 'Poppins',sans-serif;
+}
+
+.topnav {
+
+   overflow: hidden;
+   background: #364351;
+   width:100%;
+}
+
+.topnav a {
+
+  float: left;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+.topnav a:hover {
+
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  
+  background-color:#f2f2f2;
+  color: black;
+}
+
+

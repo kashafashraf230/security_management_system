@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="login.css">
+    <title>Login</title>
+    <script src="SecurityManager.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+      </style>
+
+    <script>
+
+        var objId = -1;
+
+        function validate()
+        {
+            var name = document.getElementById("adminUsername").value;
+            var password = document.getElementById("adminPass").value;
+
+
+            if(name == "") 
+            {  
+                document.getElementById("name").innerHTML = "Username is empty!";
+                return false;
+            }
+            if(password == "")
+             {
+                document.getElementById("Password").innerHTML = "Password is empty!";
+                return false;
+             }
+
+             var result = SecurityManager.ValidateAdmin(name, password);
+
+             if(!result)
+             {
+                document.getElementById("name").innerHTML = "Invalid username or password!";
+                return false;
+             }
+
+             return true;
+        }
+
+        function validateUser()
+        {
+            var user_name = document.getElementById("Username").value;
+            var user_password = document.getElementById("userPass").value;
+
+
+            if(user_name == "") 
+            {  
+                document.getElementById("user").innerHTML = "Username is empty!";
+                return false;
+            }
+            if(user_password == "")
+             {
+                document.getElementById("pwd").innerHTML = "Password is empty!";
+                return false;
+             }
+
+             var result = checkUser(user_name, user_password);
+
+             if(!result)
+             {
+                document.getElementById("wrong").innerHTML = "Incorrect username or password!";
+                return false;
+             }
+
+             return true;
+        }
+
+        function checkUser(userName, userPwd)
+        {
+            var user_data = SecurityManager.GetAllUsers();
+
+            for(let i = 0; i < user_data.length; i++){
+
+                if(user_data[i].user_login == userName && user_data[i].user_pwd == userPwd)
+                {
+                    objId = user_data[i].ID;
+                    localStorage.setItem("userId", objId);
+                    localStorage.setItem("login", userName);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    </script>
+
+    <style>
+
+        body{
+
+            display: flex;
+            margin-top: 100px;
+        }
+
+        div.form1{
+
+            float: left;
+           
+        }
+
+        div.form2{
+
+        float: right;
+
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+
+        <h1 class="main">Security Manager</h1>
+
+        <div class="form1">
+            <div class="login">
+                <h2 class="login_head">Login Admin</h2>
+            </div>
+
+            <div class="admin_form">
+
+                <form id="Admin" action="admin.html">
+                    <div class="errors" id="name" style="color: red;"></div>
+                    <label for="adminName">Username:</label><br>
+                    <input type="text" name="admin_name" id="adminUsername"><br>
+                   
+                    <div class="errors" id="Password" style="color: red;"></div>
+                    <label for="adminpwd">Password:</label><br>
+                    <input type="password" name="admin_pwd" id="adminPass"><br>
+
+                    <div class="submit">
+
+                        <input type="submit" value="Login" onclick="return validate()" >
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <div class="form2">
+            <div class="login">
+                <h2 class="login_head">Login User</h2>
+            </div>
+
+            <div class="errors" id="wrong" style="color: red;"></div>
+
+            <div class="user_form">
+
+                <form id="User" action="user.html">
+                    <div class="errors" id="user" style="color: red;"></div>
+                    <label for="UserName">Username:</label><br>
+                    <input type="text" name="user_name" id="Username"><br>
+                    <div class="errors" id="pwd" style="color: red;"></div>
+                    <label for="userpwd">Password:</label><br>
+                    <input type="password" name="user_pwd" id="userPass"><br>
+
+                    <div class="submit">
+
+                        <input type="submit" value="Login" onclick="return validateUser()">
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+</body>
+</html>

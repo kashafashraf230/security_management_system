@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="navbar.css">
+    <script src="SecurityManager.js"></script>
+    <title>User_Panel</title>
+
+    <script>
+        var Id = localStorage.getItem("userId");
+        var user_Login = localStorage.getItem("login");
+
+        roles_flag = false;
+        perms_flag = false;
+
+       function getData()
+       {
+            var users_data = SecurityManager.GetAllUserRoles();
+            var roles_data = SecurityManager.GetAllRolePermissions();
+
+            var createDiv = document.createElement('div');
+            var append_div = gid('users_div');
+
+            for(let i = 0; i < users_data.length; i++){
+
+                perms_flag = false;
+
+                if(users_data[i].User == user_Login)
+                {
+                    roles_flag = true;
+
+                    var heading = document.createElement('h2');
+                    heading.innerHTML = "<h2> Role </h2>";
+                    createDiv.appendChild(heading);
+
+                    var list = document.createElement('ul');
+                    list.innerHTML = "<li>" + users_data[i].Roles + "</li>";
+                    createDiv.appendChild(list);
+        
+                    var heading2 = document.createElement('h2');
+                    heading2.innerHTML = "<h2> Permissions </h2>";
+                    createDiv.appendChild(heading2);
+
+                    for(let k = 0; k < roles_data.length; k++ ){
+
+                        if(roles_data[k].Roles == users_data[i].Roles)
+                        {
+                            perms_flag = true;
+                            var list2 = document.createElement('ul');
+                            list2.innerHTML = "<li>" + roles_data[k].permissions + "</li>";
+                            createDiv.appendChild(list2);
+                        }
+
+                }
+
+                if(!perms_flag){
+
+                    var list3 = document.createElement('div');
+                    list3.setAttribute('style', 'color:red');
+                    list3.innerHTML = "<li>No permissions.</li>";
+                    createDiv.appendChild(list3);
+                }
+            }
+
+       }
+
+       if(!roles_flag){
+
+        document.getElementById("roles").innerHTML = "No roles assigned yet.";
+       }
+
+       append_div.appendChild(createDiv);
+
+    }
+
+
+    </script>
+
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+        body{
+            background:#d5d5d5;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .data{
+        margin-left: 350px;
+        margin-top: 30px;
+        text-shadow:2px 2px white ;
+        }
+
+        .header{
+            font-size: 52px;
+
+        }
+
+        .errors{
+
+            font-size: 24px;
+            margin-left: 30px;
+        }
+        </style>
+    
+</head>
+<body onload="getData()">
+
+    <div class= "container">
+
+        <nav class="topnav">
+        <a class = "active" href="user.html"><b>Home</b></a>
+        <a href="Login.html">LogOut</a>
+        </nav>
+
+        </div>
+
+        <div class="data" id="users_div">
+    <h1 class="header">Welcome User</h1>
+
+            <div class="errors" id="roles" style="color:red;"></div>
+    </div>
+</body>
+</html>

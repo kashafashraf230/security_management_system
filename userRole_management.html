@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User-Role_Management</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="user_management.css">
+    <script src="SecurityManager.js"></script>
+    <script>
+
+        var id_exist = -1;
+        var edit_flag = false;
+
+        function Main(){
+            var roles = SecurityManager.GetAllRoles();
+            var cmb = document.getElementById("roles");
+            for(var i=0;i<roles.length;i++)
+            {
+                var opt = document.createElement("option");
+                opt.setAttribute("value",roles[i].role_name);
+                opt.innerText = roles[i].role_name;
+
+                cmb.appendChild(opt);
+            }
+
+                var users_cmb = document.getElementById("users");
+
+                var users_data = SecurityManager.GetAllUsers();
+
+                for(var j=0;j<users_data.length;j++)
+                {
+                    var option = document.createElement("option");
+                    option.setAttribute("value",users_data[j].user_login);
+                    option.innerText = users_data[j].user_login;
+
+                    users_cmb.appendChild(option);
+                }   
+
+        }//end ofMain
+
+
+
+        function successFunc()
+        {
+            alert("User-Role Saved!");
+        }
+
+        function errorFunc(){
+            alert("Can't save User-Role!")
+        }
+
+        function handleSubmit(event) {
+
+            event.preventDefault();
+
+            var check = false;
+
+            if(validate())
+            {
+                
+                event.preventDefault();
+                    var user_role = gid('roles').value;
+                    var user_selected = gid('users').value;
+
+                if(id_exist == -1){
+
+                    var obj =  {Roles: user_role, User: user_selected};
+                }
+
+                if(id_exist > 0){
+
+                    var obj =  {ID: id_exist, Roles: user_role, User: user_selected};
+                    check = uniqueUserRole();
+                    if(check){
+
+                        document.getElementById("roles_error").innerHTML = "User-Role already exists!!";
+                        return false;
+                    }
+
+                }
+
+                if(!check){
+                    SecurityManager.SaveUserRole(obj, successFunc, errorFunc);
+                    location.reload();
+                }
+             }
+
+            else{
+                alert("Can't save User-Role!");
+            }
+
+            edit_flag = false;
+             
+        }
+
+        function uniqueUserRole(){
+
+            let role_data = SecurityManager. GetAllUserRoles();
+            var user_role = document.getElementById("roles").value;
+            var user_name = document.getElementById("users").value;
+
+
+            for(let i = 0; i < role_data.length; i++){
+
+                if(role_data[i].ID != id_exist){
+                if(role_data[i].Roles == user_role && role_data[i].User == user_name)
+                {
+                    return true;
+                }
+            }
+
+            } //end of for loop
+            return false;
+
+            }
+
+
+        function validate() {
+
+            var role_opt = gid("roles").value;
+            var user_opt = gid("users").value;
+
+
+            if ( role_opt == "" || role_opt == "Select")
+	        {		
+             document.getElementById("roles_error").innerHTML = "Must Select Role!!";
+			 return false;
+	        }
+
+            if ( user_opt == "" || user_opt == "Select")
+	        {		
+             document.getElementById("user-error").innerHTML = "Must Select User!!";
+			 return false;
+	        } 
+
+            if(!edit_flag){
+
+                if (uniqueUserRole())
+                {		
+                document.getElementById("roles_error").innerHTML = "User-Role already exists!!";
+                return false;
+                }
+                }
+
+	        return true;
+
+        }
+
+        function tableView()
+       {
+
+        var userRole_data = SecurityManager.GetAllUserRoles();
+        const TABLE = document.createElement('table');
+        TABLE.setAttribute('class','viewTable');
+        TABLE.innerHTML="<tr><th>ID</th><th>User</th><th>Role</th><th>Edit</th><th>Delete</th></tr>";
+    
+        for(var i=0; i < userRole_data.length; i++)
+        { 
+            var trow = document.createElement('tr');
+
+            trow.innerHTML="<td>" + userRole_data[i].ID +"</td><td>"+userRole_data[i].User +"</td><td>"+userRole_data[i].Roles +"</td><td><a href='javascript:loadForm("+userRole_data[i].ID+")'>Edit</a></td><td><a href='javascript:DeleteUser("+userRole_data[i].ID+")'>Delete</a></td>";
+           
+            TABLE.appendChild(trow);
+        }
+
+        document.getElementById("tableView").appendChild(TABLE);
+    
+        }
+
+        function DeleteUser(userRoleId){
+
+            console.log("delete");
+             var result = confirm("Do you want to Delete User-Role?");
+                if(result){
+
+                    SecurityManager.DeleteUserRole(userRoleId, successFunc, errorFunc);
+                    location.reload();
+                }
+                else{
+                    return;
+                }
+        }
+
+        function loadForm(userRoleId)
+        {
+            var editUserRole = SecurityManager.GetUserRoleById(userRoleId);
+
+            edit_flag = true;
+            id_exist = userRoleId;
+            gid("roles").value = editUserRole.Roles;
+            gid("users").value = editUserRole.User;
+
+        }
+
+        function reloadPage()
+        {
+            location.reload();
+        }
+
+    </script>
+
+    <style>
+
+         div.container {
+
+            display: flex; 
+            margin-top: 100px;
+            justify-content: center;
+           
+        }
+
+        div.user_form{
+
+            float: left;
+            margin-right: 20px;
+        }
+
+        div.table{
+
+        margin-top: 25px;
+        margin-left: 30px;
+        float: right;
+        align-items: center;
+
+        }
+    </style>
+
+
+</head>
+<body onload="Main();tableView()">
+    
+
+        <div class="navBar">
+            <nav class="topnav">
+                <a href="admin.html"><b>Home</b></a>
+                <a href="user_management.html">User Management </a>
+                <a href="role_management.html">Role Management</a>
+                <a href="permission_management.html">Pemission Management</a>
+                <a href="rolePermission_management.html">Role-Pemission Management</a>
+                <a class="active" href="userRole_management.html">User-Role Management</a>
+                <a href="Login.html">LogOut</a>
+                </nav>
+        </div>
+        <div class="container">
+        <div class="user_form">
+
+            <form class="userForm" id="user_form" name="user" >
+
+            <div class="main">
+                <h2 class="form_head">User-Role Management</h2>
+            </div>
+
+                    <div class="errors" id="roles_error" style="color: red;"></div>
+                    <label for="roles">Role:</label><br>
+                    <select name="Roles" id="roles"> 
+                    <option >Select</option>
+                    </select><br><br>
+                  
+                    <div class="errors" id="user-error" style="color: red;"></div>
+                    <label for="user">User:</label><br>
+                    <select name="User" id="users">
+                    <option>Select</option>
+                    </select><br><br>
+                    
+
+                    <div class="submit">
+
+                        <input type="reset" onclick="reloadPage()">
+                        <input type="submit" value="Save" >
+
+                    </div>
+                </form>
+
+        </div>
+
+        <div class="table" id="tableView">
+
+        </div>
+
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', handleSubmit);
+    </script>
+
+    <script>
+       var user_roles = SecurityManager.GetAllUserRoles();
+       console.log(user_roles);
+    </script>
+    
+</body>
+</html>

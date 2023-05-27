@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User_Management</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="user_management.css">
+
+    <script src="SecurityManager.js"></script>
+    <script>
+
+        var id_exist = -1;
+        var edit_flag = false;
+
+        function Main(){
+            var countries = SecurityManager.GetCountries();
+            var cmb = document.getElementById('cmbCountries')
+            for(var i=0;i<countries.length;i++)
+            {
+                var opt = document.createElement("option");
+                opt.setAttribute("value",countries[i].CountryID);
+                opt.innerText = countries[i].Name;
+
+                cmb.appendChild(opt);
+            }
+
+
+            cmb.onchange = function(){
+
+                var citycmb = document.getElementById('cmbCities');
+
+                //Remove all child elements (e.g. options)
+                citycmb.innerHTML = '';
+
+                var cities = SecurityManager.GetCitiesByCountryId(cmb.value);
+
+                for(var j=0;j<cities.length;j++)
+                {
+                    var option = document.createElement("option");
+                    option.setAttribute("value",cities[j].CityID);
+                    option.innerText = cities[j].Name;
+
+                    citycmb.appendChild(option);
+                }   
+
+
+            }//end of onchange
+
+        }//end ofMain
+
+       
+
+        function successFunc()
+        {
+            alert("User Saved!");
+        }
+
+        function errorFunc(){
+            alert("Can't save user!")
+        }
+
+        function handleSubmit(event) {
+
+            event.preventDefault();
+
+            var check1 = false;
+            var check2 = false;
+
+            console.log(check1);
+            console.log(check2);
+
+            if(validate())
+            {
+                
+                event.preventDefault();
+                    var login = gid('userLogin').value;
+                    var pass = gid('userPass').value;
+                    var name = gid('Username').value;
+                    var email = gid('userEmail').value;
+                    var country_dropMenu = gid("cmbCountries").value;
+                    var city_dropMenu = gid("cmbCities").value;
+                    
+
+                if(id_exist == -1){
+
+                    var obj =  {user_login:login, user_pwd:pass, user_name:name, user_email:email,Countries:country_dropMenu, Cities:city_dropMenu};
+                }
+
+                if(id_exist > 0){
+
+                    var obj =  {ID: id_exist, user_login:login, user_pwd:pass, user_name:name, user_email:email,Countries:country_dropMenu, Cities:city_dropMenu};
+
+                    check1 = uniqueLogin();
+                    check2 = uniqueEmail();
+                    
+                    if(check1){
+                        document.getElementById("login").innerHTML = "Login already exists!!";
+                        return false;
+                    }
+
+                    if(check2){
+                    document.getElementById("Email").innerHTML = "Email already exists!!";
+			        return false;
+                     }
+                }
+                    if(!check1 && !check2){
+                    SecurityManager.SaveUser(obj, successFunc, errorFunc);
+                    location.reload();
+                }
+             }
+
+            else{
+                alert("Can't save user!");
+            }
+             
+            edit_flag = false;
+        }
+
+        function uniqueLogin(){
+
+            let user_data = SecurityManager.GetAllUsers();
+            var login = document.getElementById("userLogin").value;
+
+            for(let i = 0; i < user_data.length; i++){
+
+
+                if(user_data[i].ID != id_exist){
+                if(user_data[i].user_login == login)
+                {
+                    return true;
+                }
+            }
+            } //end of for loop
+            return false;
+
+        }
+
+        function uniqueEmail(){
+
+            let user_data = SecurityManager.GetAllUsers();
+            var email = document.getElementById("userEmail").value;
+
+
+            for(let i = 0; i < user_data.length; i++){
+
+                if(user_data[i].ID != id_exist){
+                if(user_data[i].user_email == email)
+                {
+                    return true;
+                }
+            }
+
+            } //end of for loop
+            return false;
+
+        }
+
+        function validate() {
+
+            var country_dropMenu = document.getElementById("cmbCountries");
+            var country = country_dropMenu.options[country_dropMenu.selectedIndex].text;
+
+            var city_dropMenu = document.getElementById("cmbCities").value;
+
+
+            if ( document.user.userLogin.value == "" )
+	        {
+            document.getElementById("login").innerHTML = "Login is empty!!";		
+			return false;
+	        }
+	
+	        if(document.user.userPass.value == "")	
+	        {
+            document.getElementById("Password").innerHTML = "Password is empty!!";
+			return false;
+	        }	
+
+            if ( document.user.Username.value == "" )
+	        {
+            document.getElementById("name").innerHTML = "Name is empty!!";		
+			return false;
+	        }
+
+             if ( !(/^[A-Za-z]+$/.test(document.user.Username.value)))
+            {
+                document.getElementById("name").innerHTML = "Only alphabtes are allowed in Name!";		
+                return false;
+            }
+
+
+            if ( document.user.userEmail.value == "" )
+	        {		
+             document.getElementById("Email").innerHTML = "Email is empty!!";
+			 return false;
+	        }
+
+            if ( country == "" || country == "Select")
+	        {		
+             document.getElementById("country").innerHTML = "Must Select Country!!";
+			 return false;
+	        }
+
+            if ( city_dropMenu == "" || city_dropMenu == "Select")
+	        {		
+             document.getElementById("city").innerHTML = "Must Select City!!";
+			 return false;
+	        } 
+
+        if(!edit_flag){
+
+            if (uniqueLogin())
+	        {		
+             document.getElementById("login").innerHTML = "Login already exists!!";
+			 return false;
+	        }
+
+            if (uniqueEmail())
+	        {		
+             document.getElementById("Email").innerHTML = "Email already exists!!";
+			 return false;
+	        }
+        }
+	        return true;
+
+        }
+
+        function tableView()
+       {
+
+        var users_data = SecurityManager.GetAllUsers();
+        const TABLE = document.createElement('table');
+        TABLE.setAttribute('class','viewTable');
+        TABLE.innerHTML="<tr><th>ID</th><th>Name</th><th>Email</th><th>Edit</th><th>Delete</th></tr>";
+    
+        for(var i=0; i < users_data.length; i++)
+        { 
+            var trow = document.createElement('tr');
+
+            trow.innerHTML="<td>" + users_data[i].ID +"</td><td>"+users_data[i].user_login +"</td><td>"+users_data[i].user_email +"</td><td><a href='javascript:loadForm("+users_data[i].ID+")'>Edit</a></td><td><a href='javascript:DeleteUser("+users_data[i].ID+")'>Delete</a></td>";
+           
+            TABLE.appendChild(trow);
+        }
+
+        document.getElementById("tableView").appendChild(TABLE);
+    
+        }
+
+        function DeleteUser(userId){
+
+            console.log("delete");
+             var result = confirm("Do you want to Delete User?");
+                if(result){
+
+                    SecurityManager.DeleteUser(userId, successFunc, errorFunc);
+                    location.reload();
+
+                }
+                else{
+                    return;
+                }
+        }
+
+        function loadForm(userId)
+        {
+            var editUser = SecurityManager.GetUserById(userId);
+
+            edit_flag = true;
+            id_exist = userId;
+            gid("userLogin").value = editUser.user_login;
+            gid("userPass").value = editUser.user_pwd;
+            gid("Username").value = editUser.user_name;
+            gid("userEmail").value = editUser.user_email;
+            gid("cmbCountries").value = editUser.Countries;
+       
+            var user_city = gid("cmbCities");
+            var options = document.createElement("option");
+            options.setAttribute("value",editUser.Cities);
+            options.innerText = editUser.Cities;
+            user_city.appendChild(options);
+        }
+
+        function reloadPage()
+        {
+            location.reload();
+        }
+
+    </script>
+
+    <style>
+
+         div.container {
+
+            display: flex; 
+            margin-top: 80px;
+            justify-content: center;
+           
+        }
+
+        div.user_form{
+
+            float: left;
+            margin-right: 20px;
+        }
+
+        div.table{
+
+        margin-top: 25px;
+        margin-left: 30px;
+        float: right;
+        align-items: center;
+
+        }
+
+    </style>
+
+
+</head>
+<body onload="Main();tableView()">
+    
+
+        <div class="navBar">
+            <nav class="topnav">
+                <a href="admin.html"><b>Home</b></a>
+                <a class="active" href="user_management.html">User Management </a>
+                <a href="role_management.html">Role Management</a>
+                <a href="permission_management.html">Pemission Management</a>
+                <a href="rolePermission_management.html">Role-Pemission Management</a>
+                <a href="userRole_management.html">User-Role Management</a>
+                <a href="Login.html">LogOut</a>
+                </nav>
+        </div>
+        <div class="container">
+        <div class="user_form">
+
+            <form class="userForm" id="user_form" name="user" >
+
+            <div class="main">
+                <h2 class="form_head">User Management</h2>
+            </div>
+
+                    <div class="errors" id="login" style="color: red;"></div>
+                    <label for="userLogin">Login:</label><br>
+                    <input type="text" name="user_login" id="userLogin"><br><br>
+
+                    <div class="errors" id="Password" style="color: red;"></div>
+                    <label for="userpwd">Password:</label><br>
+                    <input type="password" name="user_pwd" id="userPass"><br><br>
+
+                    <div class="errors" id="name" style="color: red;"></div>
+                    <label for="UserName">Name:</label><br>
+                    <input type="text" name="user_name" id="Username"><br><br>
+
+                    <div class="errors" id="Email" style="color: red;"></div>
+                    <label for="email">Email:</label><br>
+                    <input type="email" name="user_email" id="userEmail"><br><br>
+                    
+                    <div class="errors" id="country" style="color: red;"></div>
+                    <label for="countries">Country:</label><br>
+                    <select name="Countries" id="cmbCountries"> 
+                    <option >Select</option>
+                    </select><br><br>
+                    
+                    <div class="errors" id="city" style="color: red;"></div>
+                    <label for="cities">City:</label><br>
+                    <select name="Cities" id="cmbCities">
+                    <option>Select</option>
+                    </select><br><br>
+                   
+
+                    <div class="submit">
+
+                        <input type="reset" onclick="reloadPage()">
+                        <input type="submit" value="Save" >
+
+                    </div>
+                </form>
+
+        </div>
+
+        <div class="table" id="tableView">
+
+        </div>
+
+    </div>
+
+    <script>
+            const form = document.querySelector('form');
+            form.addEventListener('submit', handleSubmit);
+    </script>
+
+    <script>
+       var users = SecurityManager.GetAllUsers();
+       console.log(users);
+    </script>
+    
+</body>
+</html>
